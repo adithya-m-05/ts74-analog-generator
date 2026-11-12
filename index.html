@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Physical UI — Model TS-74 Analog Generator &amp; Focus Timer</title>
+  <meta name="description" content="Hyper-realistic, skeuomorphic, interactive 1970s laboratory benchtop signal generator and analog focus timer with real-time Web Audio API synthesis.">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <!-- Ambient Workbench Environment -->
+  <main class="workbench">
+    <!-- Main Instrument Chassis -->
+    <article class="chassis" id="instrument-chassis" aria-label="TS-74 Analog Generator and Focus Timer">
+      
+      <!-- Corner Mounting Hardware (Heavy Machine Screws) -->
+      <div class="screw screw--top-left" aria-hidden="true"></div>
+      <div class="screw screw--top-right" aria-hidden="true"></div>
+      <div class="screw screw--bottom-left" aria-hidden="true"></div>
+      <div class="screw screw--bottom-right" aria-hidden="true"></div>
+
+      <!-- Left & Right Rackmount Carry Handles -->
+      <div class="rack-handle rack-handle--left" aria-hidden="true">
+        <div class="rack-handle__bracket rack-handle__bracket--top"></div>
+        <div class="rack-handle__bar"></div>
+        <div class="rack-handle__bracket rack-handle__bracket--bottom"></div>
+      </div>
+      <div class="rack-handle rack-handle--right" aria-hidden="true">
+        <div class="rack-handle__bracket rack-handle__bracket--top"></div>
+        <div class="rack-handle__bar"></div>
+        <div class="rack-handle__bracket rack-handle__bracket--bottom"></div>
+      </div>
+
+      <!-- Main Faceplate / Instrument Panel -->
+      <section class="faceplate">
+
+        <!-- 1. Header Plate & Manufacturer Badges -->
+        <header class="header-plate">
+          <div class="header-plate__branding">
+            <span class="mfr-badge" aria-hidden="true">TEL-INSTRUMENTS CORP. &bull; CHICAGO, ILL.</span>
+            <h1 class="model-title">MODEL TS-74 ANALOG GENERATOR</h1>
+            <p class="model-subtitle">PRECISION TIME BASE &amp; HARMONIC NOISE SYNTHESIZER</p>
+          </div>
+
+          <div class="header-plate__specs" aria-label="Machine Specification Plate">
+            <div class="spec-cell">
+              <span class="spec-label">VOLTAGE</span>
+              <span class="spec-value">115V AC 60Hz</span>
+            </div>
+            <div class="spec-cell">
+              <span class="spec-label">SER. NO.</span>
+              <span class="spec-value">74-8821-B</span>
+            </div>
+            <div class="spec-cell">
+              <span class="spec-label">STANDARDS</span>
+              <span class="spec-value">MIL-T-21200</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- 2. Nixie Display Bay -->
+        <section class="readout-bay" aria-label="Nixie Tube Readout Module">
+          <div class="readout-bezel">
+            <div class="readout-glass-glare" aria-hidden="true"></div>
+            
+            <div class="nixie-display" id="nixie-display" aria-live="polite" aria-atomic="true">
+              <!-- Tube 1: Minutes Tens -->
+              <div class="nixie-tube" id="tube-min-tens" data-digit="0">
+                <span class="nixie-wiremesh" aria-hidden="true"></span>
+                <span class="nixie-ghost" aria-hidden="true">8</span>
+                <span class="nixie-glyph">2</span>
+              </div>
+              <!-- Tube 2: Minutes Ones -->
+              <div class="nixie-tube" id="tube-min-ones" data-digit="5">
+                <span class="nixie-wiremesh" aria-hidden="true"></span>
+                <span class="nixie-ghost" aria-hidden="true">8</span>
+                <span class="nixie-glyph">5</span>
+              </div>
+
+              <!-- Colon Separator Tube -->
+              <div class="nixie-colon" id="tube-colon" aria-hidden="true">
+                <span class="colon-dot colon-dot--top"></span>
+                <span class="colon-dot colon-dot--bottom"></span>
+              </div>
+
+              <!-- Tube 3: Seconds Tens -->
+              <div class="nixie-tube" id="tube-sec-tens" data-digit="0">
+                <span class="nixie-wiremesh" aria-hidden="true"></span>
+                <span class="nixie-ghost" aria-hidden="true">8</span>
+                <span class="nixie-glyph">0</span>
+              </div>
+              <!-- Tube 4: Seconds Ones -->
+              <div class="nixie-tube" id="tube-sec-ones" data-digit="0">
+                <span class="nixie-wiremesh" aria-hidden="true"></span>
+                <span class="nixie-ghost" aria-hidden="true">8</span>
+                <span class="nixie-glyph">0</span>
+              </div>
+            </div>
+
+            <div class="readout-label" aria-hidden="true">
+              <span>ELAPSED COUNTDOWN TIME (MIN : SEC)</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Primary Control Bay -->
+        <section class="control-bay" aria-label="Instrument Controls">
+          
+          <!-- Sub-section A: Power & Status Jewel -->
+          <div class="control-module control-module--power">
+            <div class="subpanel-frame">
+              <span class="subpanel-title">MAIN POWER</span>
+
+              <!-- Status Jewel Indicator Lamp -->
+              <div class="lamp-assembly">
+                <div 
+                  class="indicator-lamp" 
+                  id="indicator-lamp" 
+                  role="status" 
+                  aria-label="Main Power Indicator: Off"
+                  aria-live="polite"
+                >
+                  <div class="lamp-lens"></div>
+                  <div class="lamp-filament" aria-hidden="true"></div>
+                  <div class="lamp-reflector" aria-hidden="true"></div>
+                </div>
+                <span class="lamp-label" aria-hidden="true">PILOT</span>
+              </div>
+
+              <!-- Heavy Industrial Dual-Pole Toggle Switch -->
+              <div class="toggle-assembly">
+                <span class="toggle-label toggle-label--up" aria-hidden="true">POWER ON</span>
+                
+                <button 
+                  type="button" 
+                  class="toggle-switch" 
+                  id="power-switch"
+                  role="switch" 
+                  aria-checked="false" 
+                  aria-label="Master Power Switch"
+                  tabindex="0"
+                >
+                  <span class="toggle-base" aria-hidden="true">
+                    <span class="toggle-nut"></span>
+                    <span class="toggle-bushing"></span>
+                  </span>
+                  <span class="toggle-lever" aria-hidden="true">
+                    <span class="toggle-tip"></span>
+                  </span>
+                </button>
+
+                <span class="toggle-label toggle-label--down" aria-hidden="true">OFF / STANDBY</span>
+              </div>
+
+              <!-- Power Subpanel Fasteners -->
+              <div class="mini-screw mini-screw--top" aria-hidden="true"></div>
+              <div class="mini-screw mini-screw--bottom" aria-hidden="true"></div>
+            </div>
+          </div>
+
+          <!-- Sub-section B: Potentiometer 1 - Focus Timer Knob -->
+          <div class="control-module control-module--timer">
+            <div class="subpanel-frame">
+              <span class="subpanel-title">FOCUS DURATION</span>
+
+              <div class="potentiometer-group">
+                <!-- Calibrated Tick Mark Gauge -->
+                <div class="gauge-ticks gauge-ticks--timer" id="timer-ticks" aria-hidden="true">
+                  <!-- Dial Ticks & Labels will be radially styled in CSS -->
+                  <div class="tick tick--0" data-val="5"><span>5m</span></div>
+                  <div class="tick tick--1" data-val="10"><span>10</span></div>
+                  <div class="tick tick--2" data-val="15"><span>15</span></div>
+                  <div class="tick tick--3" data-val="20"><span>20</span></div>
+                  <div class="tick tick--4" data-val="25"><span>25</span></div>
+                  <div class="tick tick--5" data-val="30"><span>30</span></div>
+                  <div class="tick tick--6" data-val="40"><span>40</span></div>
+                  <div class="tick tick--7" data-val="50"><span>50</span></div>
+                  <div class="tick tick--8" data-val="60"><span>60m</span></div>
+                </div>
+
+                <!-- Rotary Potentiometer Knob 1 -->
+                <div 
+                  class="rotary-knob" 
+                  id="timer-knob"
+                  role="slider"
+                  aria-label="Timer Duration Potentiometer"
+                  aria-valuemin="5"
+                  aria-valuemax="60"
+                  aria-valuenow="25"
+                  aria-valuetext="25 Minutes"
+                  tabindex="0"
+                >
+                  <div class="knob-cap">
+                    <div class="knob-skirt"></div>
+                    <div class="knob-ribs"></div>
+                    <div class="knob-top">
+                      <div class="knob-metal-finish"></div>
+                      <div class="knob-pointer"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="module-footer">
+                <span class="param-title">TIME INTERVAL (MIN)</span>
+                <span class="param-hint">DRAG &bull; SCROLL &bull; ARROWS</span>
+              </div>
+
+              <!-- Timer Subpanel Fasteners -->
+              <div class="mini-screw mini-screw--top" aria-hidden="true"></div>
+              <div class="mini-screw mini-screw--bottom" aria-hidden="true"></div>
+            </div>
+          </div>
+
+          <!-- Sub-section C: Potentiometer 2 - Harmonic Noise Generator Knob -->
+          <div class="control-module control-module--noise">
+            <div class="subpanel-frame">
+              <span class="subpanel-title">HARMONIC / NOISE MATRIX</span>
+
+              <div class="potentiometer-group">
+                <!-- Calibrated Tick Mark Gauge -->
+                <div class="gauge-ticks gauge-ticks--noise" id="noise-ticks" aria-hidden="true">
+                  <div class="tick tick--0" data-val="0"><span>60Hz HUM</span></div>
+                  <div class="tick tick--1" data-val="12"><span>SUB</span></div>
+                  <div class="tick tick--2" data-val="25"><span>WARM</span></div>
+                  <div class="tick tick--3" data-val="37"><span>&bull;</span></div>
+                  <div class="tick tick--4" data-val="50"><span>50/50</span></div>
+                  <div class="tick tick--5" data-val="62"><span>&bull;</span></div>
+                  <div class="tick tick--6" data-val="75"><span>BROWN</span></div>
+                  <div class="tick tick--7" data-val="87"><span>PINK</span></div>
+                  <div class="tick tick--8" data-val="100"><span>TAPE HISS</span></div>
+                </div>
+
+                <!-- Rotary Potentiometer Knob 2 -->
+                <div 
+                  class="rotary-knob" 
+                  id="noise-knob"
+                  role="slider"
+                  aria-label="Harmonic Noise Generator Blend Potentiometer"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="50"
+                  aria-valuetext="50% Balanced Hum and Tape Noise"
+                  tabindex="0"
+                >
+                  <div class="knob-cap">
+                    <div class="knob-skirt"></div>
+                    <div class="knob-ribs"></div>
+                    <div class="knob-top">
+                      <div class="knob-metal-finish"></div>
+                      <div class="knob-pointer"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="module-footer">
+                <span class="param-title">OUTPUT BALANCE (%)</span>
+                <span class="param-hint">DRAG &bull; SCROLL &bull; ARROWS</span>
+              </div>
+
+              <!-- Noise Subpanel Fasteners -->
+              <div class="mini-screw mini-screw--top" aria-hidden="true"></div>
+              <div class="mini-screw mini-screw--bottom" aria-hidden="true"></div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- 4. Lower Chassis Plate & Calibration Certification -->
+        <footer class="footer-plate">
+          <div class="calibration-badge">
+            <span class="badge-title">STANDARDS CALIBRATION SEAL</span>
+            <span class="badge-date">OCT 1974 &bull; LAB REF #409-G</span>
+          </div>
+
+          <div class="operator-guide">
+            <span class="guide-item"><kbd>SPACE</kbd> / <kbd>ENTER</kbd> Toggle Master Power</span>
+            <span class="guide-divider">&bull;</span>
+            <span class="guide-item"><kbd>&uarr;</kbd> <kbd>&rarr;</kbd> / <kbd>&darr;</kbd> <kbd>&larr;</kbd> Adjust Knobs</span>
+            <span class="guide-divider">&bull;</span>
+            <span class="guide-item">Pointer Drag &amp; Mouse Wheel Supported</span>
+          </div>
+
+          <div class="chassis-vent" aria-hidden="true">
+            <span class="vent-slot"></span>
+            <span class="vent-slot"></span>
+            <span class="vent-slot"></span>
+            <span class="vent-slot"></span>
+            <span class="vent-slot"></span>
+          </div>
+        </footer>
+
+      </section>
+    </article>
+  </main>
+</body>
+</html>

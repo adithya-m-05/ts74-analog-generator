@@ -1,0 +1,1188 @@
+/* ==========================================================================
+   THE PHYSICAL UI — MODEL TS-74 ANALOG GENERATOR & FOCUS TIMER
+   Pure Skeuomorphic CSS Engine • Zero External Assets • 100% Procedural
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Design Tokens & Color Variables
+   -------------------------------------------------------------------------- */
+:root {
+  /* Chassis Powder-Coat Palette */
+  --chassis-bg: #1e2227;
+  --chassis-metal-dark: #121518;
+  --chassis-metal-mid: #252b33;
+  --chassis-metal-light: #38404a;
+  --chassis-rim-highlight: rgba(255, 255, 255, 0.12);
+  --chassis-rim-shadow: rgba(0, 0, 0, 0.85);
+
+  /* Subpanel Inset Plate Palette */
+  --subpanel-bg: #16191d;
+  --subpanel-border-dark: #0d0f12;
+  --subpanel-border-light: rgba(255, 255, 255, 0.08);
+
+  /* Typography Colors */
+  --text-milled: #d5dce6;
+  --text-dim: #7d8895;
+  --text-muted: #545e6a;
+  --text-stamp: #9caab8;
+
+  /* Nixie Tube Amber / Orange Gas Glow */
+  --nixie-off-filament: rgba(65, 45, 30, 0.22);
+  --nixie-off-wire: rgba(40, 32, 26, 0.4);
+  --nixie-on-core: #fffbe8;
+  --nixie-on-amber: #ff981a;
+  --nixie-on-deep: #ff4800;
+  --nixie-on-halo: rgba(255, 95, 0, 0.55);
+  --nixie-glass-reflection: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.04) 30%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.02) 80%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+
+  /* Pilot Lamp Incandescent Ruby / Amber */
+  --lamp-off-glass: #2a1109;
+  --lamp-off-core: #180803;
+  --lamp-on-core: #fffae8;
+  --lamp-on-amber: #ff9000;
+  --lamp-on-ruby: #e63900;
+  --lamp-on-flare: rgba(255, 110, 0, 0.7);
+
+  /* Hardware Chrome & Bakelite */
+  --chrome-highlight: #ffffff;
+  --chrome-light: #d1d6dc;
+  --chrome-mid: #8a94a0;
+  --chrome-dark: #373e46;
+  --chrome-shadow: #181c20;
+  --bakelite-dark: #111315;
+  --bakelite-mid: #1f2328;
+  --bakelite-rib: #2d333b;
+
+  /* Font Stacks */
+  --font-mono: 'Consolas', 'Courier New', 'Share Tech Mono', monospace;
+  --font-technical: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+
+  /* Standard Transitions */
+  --transition-fast: 120ms cubic-bezier(0.2, 0.8, 0.4, 1);
+  --transition-toggle: 180ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset & Workbench Environment
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  background-color: #0d1014;
+  /* Dark workshop benchtop background with ambient desk lamp falloff */
+  background-image: 
+    radial-gradient(ellipse at 50% 35%, rgba(42, 54, 70, 0.28) 0%, rgba(10, 13, 17, 0.95) 75%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.007) 0px, rgba(255, 255, 255, 0.007) 1px, transparent 1px, transparent 12px),
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.2) 0px, rgba(0, 0, 0, 0.2) 1px, transparent 1px, transparent 12px);
+  color: var(--text-milled);
+  font-family: var(--font-technical);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+.workbench {
+  width: 100%;
+  max-width: 1020px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1200px;
+}
+
+/* --------------------------------------------------------------------------
+   3. Main Instrument Chassis
+   -------------------------------------------------------------------------- */
+.chassis {
+  position: relative;
+  width: 100%;
+  background: 
+    /* Layer 1: Fine metal grain texture */
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 85% 90%, rgba(0, 0, 0, 0.5) 0%, transparent 50%),
+    linear-gradient(180deg, #2a3038 0%, #1e2329 18%, #15181c 65%, #101215 100%);
+  border-radius: 12px;
+  padding: 18px 24px 22px 24px;
+  /* Realistic extruded chassis drop shadow & edge bevel */
+  box-shadow:
+    /* Top extruded highlight */
+    0 1px 0 rgba(255, 255, 255, 0.22) inset,
+    0 -2px 0 rgba(0, 0, 0, 0.9) inset,
+    /* Inner dark perimeter shadow */
+    inset 0 0 15px rgba(0, 0, 0, 0.8),
+    /* Deep heavy benchtop cast shadow */
+    0 8px 16px rgba(0, 0, 0, 0.6),
+    0 24px 50px rgba(0, 0, 0, 0.75),
+    0 50px 90px rgba(0, 0, 0, 0.9);
+  border: 1px solid #101317;
+  transition: box-shadow var(--transition-fast);
+}
+
+/* Ambient glow on chassis when machine is active */
+.chassis.is-powered {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.22) inset,
+    0 -2px 0 rgba(0, 0, 0, 0.9) inset,
+    inset 0 0 18px rgba(0, 0, 0, 0.8),
+    0 8px 16px rgba(0, 0, 0, 0.6),
+    0 24px 50px rgba(0, 0, 0, 0.75),
+    0 50px 90px rgba(0, 0, 0, 0.9),
+    0 0 120px rgba(255, 110, 0, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   4. Corner Mounting Screws (Countersunk Oval-Head Screws)
+   -------------------------------------------------------------------------- */
+.screw {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 35% 35%, #94a0ac 0%, #56606a 45%, #2a3138 85%, #15191d 100%);
+  box-shadow:
+    0 1px 2px rgba(255, 255, 255, 0.25) inset,
+    0 -1px 2px rgba(0, 0, 0, 0.85) inset,
+    0 2px 4px rgba(0, 0, 0, 0.7),
+    0 0 0 1.5px #0d1013,
+    0 0 0 3px #272d34;
+  z-index: 10;
+}
+
+/* Slotted screw driver groove */
+.screw::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 20%;
+  width: 60%;
+  height: 2.5px;
+  background: #111417;
+  box-shadow: 
+    0 1px 0 rgba(255, 255, 255, 0.35),
+    0 -1px 0 rgba(0, 0, 0, 0.9) inset;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+/* Realistic natural torque rotation for each corner fastener */
+.screw--top-left     { top: 10px; left: 12px; transform: rotate(38deg); }
+.screw--top-right    { top: 10px; right: 12px; transform: rotate(115deg); }
+.screw--bottom-left  { bottom: 10px; left: 12px; transform: rotate(72deg); }
+.screw--bottom-right { bottom: 10px; right: 12px; transform: rotate(154deg); }
+
+/* Subpanel Mini Screws */
+.mini-screw {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #8c97a3 0%, #464f58 60%, #1c2024 100%);
+  box-shadow: 0 1px 1px rgba(255,255,255,0.2) inset, 0 1px 2px rgba(0,0,0,0.6);
+  z-index: 5;
+}
+.mini-screw::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 15%;
+  width: 70%;
+  height: 1.5px;
+  background: #0f1215;
+  box-shadow: 0 0.5px 0 rgba(255,255,255,0.3);
+  transform: translateY(-50%);
+}
+.mini-screw--top { top: 7px; right: 10px; transform: rotate(62deg); }
+.mini-screw--bottom { bottom: 7px; right: 10px; transform: rotate(138deg); }
+
+/* --------------------------------------------------------------------------
+   5. Heavy Industrial Rackmount Carry Handles
+   -------------------------------------------------------------------------- */
+.rack-handle {
+  position: absolute;
+  top: 15%;
+  bottom: 15%;
+  width: 20px;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.rack-handle--left  { left: -16px; }
+.rack-handle--right { right: -16px; }
+
+.rack-handle__bracket {
+  position: absolute;
+  width: 18px;
+  height: 24px;
+  background: linear-gradient(180deg, #6c7885 0%, #3a424b 45%, #181d22 100%);
+  border-radius: 4px;
+  box-shadow: 
+    0 1px 1px rgba(255,255,255,0.3) inset,
+    0 3px 6px rgba(0,0,0,0.8);
+}
+.rack-handle__bracket--top { top: 0; }
+.rack-handle__bracket--bottom { bottom: 0; }
+
+.rack-handle__bar {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 3px;
+  width: 12px;
+  background: 
+    linear-gradient(90deg, 
+      #2d353e 0%, 
+      #8c9aa8 25%, 
+      #f0f4f8 50%, 
+      #717e8c 75%, 
+      #1b2026 100%
+    );
+  border-radius: 6px;
+  box-shadow: 
+    2px 0 6px rgba(0,0,0,0.7),
+    -2px 0 6px rgba(0,0,0,0.7);
+}
+.rack-handle--right .rack-handle__bracket { right: 0; }
+.rack-handle--right .rack-handle__bar { right: 3px; left: auto; }
+
+/* --------------------------------------------------------------------------
+   6. Faceplate Construction
+   -------------------------------------------------------------------------- */
+.faceplate {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+  background: 
+    linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 20%),
+    linear-gradient(0deg, rgba(0,0,0,0.3) 0%, transparent 35%),
+    #1b1f24;
+  border-radius: 8px;
+  padding: 1.25rem 1.4rem;
+  border: 1px solid #2f3741;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.7),
+    inset 1px 0 0 rgba(255, 255, 255, 0.04),
+    inset -1px 0 0 rgba(0, 0, 0, 0.5),
+    0 3px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* --------------------------------------------------------------------------
+   7. Header Plate & Stamped Typography
+   -------------------------------------------------------------------------- */
+.header-plate {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 2px solid #0f1215;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.mfr-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.2rem;
+  text-shadow: 0 -1px 0 #000, 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.model-title {
+  font-family: var(--font-technical);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--text-milled);
+  text-transform: uppercase;
+  line-height: 1.1;
+  /* Heavy stamped metal letterpress effect */
+  text-shadow:
+    0 -1px 1px #000000,
+    0 1px 1px rgba(255, 255, 255, 0.22);
+}
+
+.model-subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  margin-top: 0.25rem;
+  text-shadow: 0 -1px 0 #000;
+}
+
+.header-plate__specs {
+  display: flex;
+  gap: 0.75rem;
+  background: 
+    linear-gradient(180deg, #181d22 0%, #121518 100%);
+  padding: 0.45rem 0.85rem;
+  border-radius: 4px;
+  border: 1px solid #2d353f;
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.8),
+    0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.spec-cell {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0.4rem;
+  border-right: 1px solid #252b33;
+}
+.spec-cell:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+.spec-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+.spec-value {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-stamp);
+  letter-spacing: 0.08em;
+}
+
+/* --------------------------------------------------------------------------
+   8. Nixie Display Readout Module
+   -------------------------------------------------------------------------- */
+.readout-bay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.readout-bezel {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: #0d0f12;
+  padding: 1rem 1.6rem 0.75rem 1.6rem;
+  border-radius: 8px;
+  /* Deep beveled display housing cutout */
+  border: 1px solid #28303a;
+  box-shadow:
+    inset 0 4px 12px rgba(0, 0, 0, 0.95),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.8),
+    0 1px 0 rgba(255, 255, 255, 0.1),
+    0 -1px 0 rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+}
+
+/* Glass glare highlight across Nixie tube window */
+.readout-glass-glare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 55%;
+  background: var(--nixie-glass-reflection);
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0.85;
+}
+
+.nixie-display {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 2;
+  padding: 0.4rem 0.8rem;
+}
+
+/* Individual Nixie Glass Cylinder Tube */
+.nixie-tube {
+  position: relative;
+  width: 58px;
+  height: 96px;
+  background: 
+    /* Glass cylinder curvature highlights */
+    linear-gradient(90deg, 
+      rgba(255, 255, 255, 0.08) 0%, 
+      transparent 15%, 
+      transparent 85%, 
+      rgba(255, 255, 255, 0.05) 100%
+    ),
+    radial-gradient(ellipse at 50% 50%, #1b1612 0%, #0c0a08 85%);
+  border-radius: 12px;
+  border: 1.5px solid rgba(120, 100, 80, 0.25);
+  box-shadow:
+    inset 0 0 10px rgba(0, 0, 0, 0.9),
+    0 0 4px rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+/* Internal Neon Gas Ionization Cloud Glow */
+.chassis.is-powered .nixie-tube::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 60%, rgba(255, 125, 20, 0.25) 0%, rgba(255, 80, 0, 0.08) 60%, transparent 80%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Wiremesh Anode Grid Background inside Tube */
+.nixie-wiremesh {
+  position: absolute;
+  inset: 4px;
+  border-radius: 8px;
+  background-image: 
+    radial-gradient(circle, rgba(200, 180, 150, 0.12) 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Ghost Inactive Filaments (Stacked mesh numerals) */
+.nixie-ghost {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 3.6rem;
+  font-weight: 700;
+  color: var(--nixie-off-filament);
+  line-height: 1;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.5;
+  transform: translateY(2px);
+}
+
+/* Active Glowing Cathode Numeral */
+.nixie-glyph {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 3.6rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--nixie-off-filament);
+  z-index: 3;
+  transition: color var(--transition-fast), text-shadow var(--transition-fast);
+  transform: translateY(2px);
+}
+
+/* Colon Separator Module */
+.nixie-colon {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  padding: 0 4px;
+  height: 96px;
+}
+
+.colon-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--nixie-off-filament);
+  border: 1px solid rgba(50, 40, 30, 0.5);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+/* --------------------------------------------------------------------------
+   8b. Nixie Powered-On States & Ionization Bloom
+   -------------------------------------------------------------------------- */
+.chassis.is-powered .nixie-tube {
+  border-color: rgba(255, 140, 40, 0.4);
+  box-shadow:
+    inset 0 0 18px rgba(255, 90, 0, 0.35),
+    0 0 10px rgba(255, 70, 0, 0.22);
+}
+
+.chassis.is-powered .nixie-glyph {
+  color: var(--nixie-on-core);
+  text-shadow:
+    0 0 2px #ffffff,
+    0 0 8px var(--nixie-on-amber),
+    0 0 18px var(--nixie-on-amber),
+    0 0 32px var(--nixie-on-deep),
+    0 0 55px var(--nixie-on-halo);
+  animation: nixie-hum 4s infinite alternate ease-in-out;
+}
+
+.chassis.is-powered .colon-dot {
+  background: var(--nixie-on-core);
+  box-shadow:
+    0 0 2px #ffffff,
+    0 0 8px var(--nixie-on-amber),
+    0 0 16px var(--nixie-on-deep);
+  animation: nixie-hum 3.5s infinite alternate ease-in-out;
+}
+
+/* Subtle micro-flicker of vintage gas ionization */
+@keyframes nixie-hum {
+  0% {
+    opacity: 0.98;
+    filter: brightness(1);
+  }
+  24% {
+    opacity: 1;
+    filter: brightness(1.03);
+  }
+  50% {
+    opacity: 0.96;
+    filter: brightness(0.97);
+  }
+  75% {
+    opacity: 1;
+    filter: brightness(1.02);
+  }
+  100% {
+    opacity: 0.99;
+    filter: brightness(1);
+  }
+}
+
+.readout-label {
+  margin-top: 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  text-shadow: 0 -1px 0 #000;
+}
+
+/* --------------------------------------------------------------------------
+   9. Control Bay & Recessed Subpanels
+   -------------------------------------------------------------------------- */
+.control-bay {
+  display: grid;
+  grid-template-columns: 210px 1fr 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+@media (max-width: 860px) {
+  .control-bay {
+    grid-template-columns: 1fr;
+  }
+}
+
+.control-module {
+  position: relative;
+}
+
+.subpanel-frame {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  background: 
+    linear-gradient(180deg, #1b2026 0%, #14171b 100%);
+  border-radius: 6px;
+  padding: 1.1rem 1rem;
+  border: 1px solid #2a313b;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.8),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.subpanel-title {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text-stamp);
+  text-transform: uppercase;
+  margin-bottom: 0.8rem;
+  text-shadow: 0 -1px 0 #000, 0 1px 0 rgba(255,255,255,0.06);
+  border-bottom: 1px solid #232932;
+  width: 100%;
+  text-align: center;
+  padding-bottom: 0.35rem;
+}
+
+.module-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  margin-top: 0.75rem;
+  width: 100%;
+  border-top: 1px solid #232932;
+  padding-top: 0.4rem;
+}
+
+.param-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+
+.param-hint {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   10. Module A: Power Switch & Jewel Indicator Lamp
+   -------------------------------------------------------------------------- */
+.control-module--power .subpanel-frame {
+  gap: 1.25rem;
+}
+
+/* Status Jewel Pilot Lamp */
+.lamp-assembly {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.indicator-lamp {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  /* Chrome knurled bezel frame */
+  background: 
+    repeating-conic-gradient(#3a434d 0deg 15deg, #717d8c 15deg 30deg);
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.8),
+    0 0 0 2px #15191d,
+    0 0 0 3px #414a54;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: default;
+}
+
+.lamp-lens {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: 
+    /* Glass facet reflections */
+    repeating-conic-gradient(from 0deg, rgba(255,255,255,0.18) 0deg 30deg, transparent 30deg 60deg),
+    radial-gradient(circle at 35% 30%, #5a1e0b 0%, var(--lamp-off-glass) 60%, var(--lamp-off-core) 100%);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.9),
+    0 0 3px rgba(0, 0, 0, 0.8);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+/* Incandescent Filament inside Lamp */
+.lamp-filament {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 1px solid rgba(80, 30, 10, 0.6);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.lamp-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+  text-shadow: 0 -1px 0 #000;
+}
+
+/* Lamp Activated State (Deep Multi-layered Incandescent Amber Glow) */
+.indicator-lamp.is-lit {
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.8),
+    0 0 0 2px #15191d,
+    0 0 0 3px #ff9400,
+    0 0 22px rgba(255, 120, 0, 0.7);
+}
+
+.indicator-lamp.is-lit .lamp-lens {
+  background:
+    repeating-conic-gradient(from 0deg, rgba(255,255,255,0.45) 0deg 30deg, transparent 30deg 60deg),
+    radial-gradient(circle at 45% 45%, var(--lamp-on-core) 0%, var(--lamp-on-amber) 40%, var(--lamp-on-ruby) 85%, #8a1500 100%);
+  box-shadow:
+    inset 0 0 8px #ffffff,
+    0 0 12px var(--lamp-on-amber),
+    0 0 28px var(--lamp-on-flare),
+    0 0 45px rgba(255, 80, 0, 0.5);
+  animation: filament-warmth 2.5s infinite alternate ease-in-out;
+}
+
+@keyframes filament-warmth {
+  0% { filter: brightness(1) drop-shadow(0 0 8px #ff7b00); }
+  50% { filter: brightness(1.06) drop-shadow(0 0 12px #ff9500); }
+  100% { filter: brightness(0.98) drop-shadow(0 0 7px #ff6600); }
+}
+
+/* Tactile Industrial Dual-Pole Toggle Switch */
+.toggle-assembly {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+}
+
+.toggle-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-shadow: 0 -1px 0 #000;
+  pointer-events: none;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 54px;
+  height: 72px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  touch-action: manipulation;
+}
+
+.toggle-switch:focus-visible .toggle-base {
+  outline: 2px solid var(--nixie-on-amber);
+  outline-offset: 4px;
+}
+
+/* Chrome Hex Nut Base */
+.toggle-base {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 35% 35%, #8e9ca8 0%, #4a535c 55%, #1d2126 100%);
+  box-shadow: 
+    0 3px 8px rgba(0, 0, 0, 0.95),
+    0 0 0 2px #0f1215,
+    0 0 0 3px #38424d,
+    inset 0 1px 1px rgba(255, 255, 255, 0.45);
+  z-index: 1;
+}
+
+/* Threaded Bushing Ring */
+.toggle-bushing {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle at center, #262c33 0, #262c33 1.5px, #424b55 1.5px, #424b55 3px);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+}
+
+/* Heavy Cast Metal Lever */
+.toggle-lever {
+  position: absolute;
+  top: 8px;
+  width: 14px;
+  height: 52px;
+  background: 
+    linear-gradient(90deg, 
+      #353e47 0%, 
+      #8c9aa8 20%, 
+      #ffffff 50%, 
+      #7b8896 75%, 
+      #1b2026 100%
+    );
+  border-radius: 7px;
+  box-shadow: 
+    0 10px 14px rgba(0, 0, 0, 0.85),
+    0 1px 1px rgba(255, 255, 255, 0.5) inset;
+  z-index: 2;
+  transform-origin: center 82%;
+  /* Default OFF state: angled downward with clear throw */
+  transform: perspective(220px) rotateX(-36deg) translateY(10px);
+  transition: transform var(--transition-toggle), box-shadow var(--transition-toggle);
+}
+
+/* Teardrop Tip on Lever */
+.toggle-tip {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 40% 30%, #ffffff 0%, #c1c8cf 35%, #5a6470 70%, #20262c 100%);
+  box-shadow: 
+    0 1px 2px rgba(255, 255, 255, 0.6) inset,
+    0 4px 8px rgba(0, 0, 0, 0.85);
+}
+
+/* Active Lever State (ON: Flipped Upward) */
+.toggle-switch[aria-checked="true"] .toggle-lever {
+  transform: perspective(220px) rotateX(36deg) translateY(-12px);
+  box-shadow: 
+    0 -10px 14px rgba(0, 0, 0, 0.75),
+    0 1px 1px rgba(255, 255, 255, 0.6) inset;
+}
+
+/* --------------------------------------------------------------------------
+   11. Rotary Potentiometer Knobs & Calibrated Tick Scale
+   -------------------------------------------------------------------------- */
+.potentiometer-group {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+/* Radial Tick Mark Scale Container */
+.gauge-ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Individual Tick Element */
+.tick {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 90px;
+  transform-origin: bottom center;
+  margin-left: -1px;
+}
+
+/* Stamped Tick Hash Line */
+.tick::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 9px;
+  background: #6c7885;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12), 0 -1px 0 rgba(0,0,0,0.8);
+  border-radius: 1px;
+}
+
+/* Calibrated Numerical / Text Label */
+.tick span {
+  position: absolute;
+  top: 17px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-shadow: 0 -1px 0 #000;
+  white-space: nowrap;
+}
+
+/* Radial Gauge Geometry (270° Total Sweep: -135° to +135°) */
+/* Step = 270 / 8 = 33.75deg */
+.tick--0 { transform: rotate(-135deg); }
+.tick--0 span { transform: translateX(-50%) rotate(135deg); }
+
+.tick--1 { transform: rotate(-101.25deg); }
+.tick--1 span { transform: translateX(-50%) rotate(101.25deg); }
+
+.tick--2 { transform: rotate(-67.5deg); }
+.tick--2 span { transform: translateX(-50%) rotate(67.5deg); }
+
+.tick--3 { transform: rotate(-33.75deg); }
+.tick--3 span { transform: translateX(-50%) rotate(33.75deg); }
+
+.tick--4 { transform: rotate(0deg); }
+.tick--4 span { transform: translateX(-50%) rotate(0deg); }
+
+.tick--5 { transform: rotate(33.75deg); }
+.tick--5 span { transform: translateX(-50%) rotate(-33.75deg); }
+
+.tick--6 { transform: rotate(67.5deg); }
+.tick--6 span { transform: translateX(-50%) rotate(-67.5deg); }
+
+.tick--7 { transform: rotate(101.25deg); }
+.tick--7 span { transform: translateX(-50%) rotate(-101.25deg); }
+
+.tick--8 { transform: rotate(135deg); }
+.tick--8 span { transform: translateX(-50%) rotate(-135deg); }
+
+/* Rotary Knob Hardware Construction */
+.rotary-knob {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  cursor: grab;
+  outline: none;
+  z-index: 3;
+  touch-action: none;
+  /* Multi-layered directional drop shadow onto dial face */
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.75),
+    0 12px 24px rgba(0, 0, 0, 0.6),
+    0 0 0 2px #101317;
+}
+
+.rotary-knob:active {
+  cursor: grabbing;
+}
+
+.rotary-knob:focus-visible {
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.75),
+    0 0 0 3px var(--nixie-on-amber),
+    0 0 12px rgba(255, 140, 20, 0.5);
+}
+
+.knob-cap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Knurled Milled Outer Perimeter Flutes */
+.knob-skirt {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: 
+    repeating-conic-gradient(
+      var(--bakelite-dark) 0deg 5deg, 
+      var(--bakelite-rib) 5deg 10deg
+    );
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.25),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* Cylindrical Rib Ring */
+.knob-ribs {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #373f49 0%, #171b1f 100%);
+  box-shadow: 
+    0 1px 2px rgba(255, 255, 255, 0.2) inset,
+    0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Brushed Aluminum Center Inset Face */
+.knob-top {
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  background: 
+    repeating-radial-gradient(circle at center, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 3px),
+    radial-gradient(circle at 40% 35%, #4a5460 0%, #293038 55%, #15191d 100%);
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 0.25),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Concentric brushed metal sheen */
+.knob-metal-finish {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 45deg,
+    rgba(255, 255, 255, 0.12) 0deg,
+    transparent 60deg,
+    rgba(255, 255, 255, 0.18) 120deg,
+    transparent 180deg,
+    rgba(255, 255, 255, 0.12) 240deg,
+    transparent 300deg,
+    rgba(255, 255, 255, 0.18) 360deg
+  );
+  pointer-events: none;
+}
+
+/* Machined Pointer Notch filled with stark white enamel */
+.knob-pointer {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3.5px;
+  height: 22px;
+  background: #f4f6f8;
+  border-radius: 2px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 2px rgba(255, 255, 255, 0.8) inset;
+}
+
+/* --------------------------------------------------------------------------
+   12. Lower Chassis Plate & Calibration Seal
+   -------------------------------------------------------------------------- */
+.footer-plate {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 0.85rem;
+  border-top: 2px solid #0f1215;
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.calibration-badge {
+  display: flex;
+  flex-direction: column;
+  background: #171b20;
+  padding: 0.35rem 0.65rem;
+  border-radius: 3px;
+  border: 1px dashed #404b57;
+}
+
+.badge-title {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text-stamp);
+}
+
+.badge-date {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.operator-guide {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.guide-item {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+.guide-item kbd {
+  background: #252b33;
+  border: 1px solid #3c4652;
+  border-radius: 3px;
+  padding: 0.1rem 0.35rem;
+  font-family: inherit;
+  font-size: 0.58rem;
+  color: var(--text-milled);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.8);
+}
+
+.guide-divider {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+/* Chassis Heat Dissipation Vents */
+.chassis-vent {
+  display: flex;
+  gap: 4px;
+}
+
+.vent-slot {
+  width: 4px;
+  height: 20px;
+  background: #0d0f12;
+  border-radius: 2px;
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.95),
+    0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   13. Responsive Adaptations
+   -------------------------------------------------------------------------- */
+@media (max-width: 680px) {
+  body {
+    padding: 1rem 0.5rem;
+  }
+  .chassis {
+    padding: 14px 14px 18px 14px;
+  }
+  .header-plate {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nixie-tube {
+    width: 46px;
+    height: 80px;
+  }
+  .nixie-ghost, .nixie-glyph {
+    font-size: 2.8rem;
+  }
+  .potentiometer-group {
+    width: 150px;
+    height: 150px;
+  }
+  .tick {
+    height: 75px;
+  }
+  .rotary-knob {
+    width: 80px;
+    height: 80px;
+  }
+  .footer-plate {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
